@@ -1,0 +1,123 @@
+From 2666387a3f50c21b0503e9a7291f012e70e92086 Mon Sep 17 00:00:00 2001
+From: NlGHT <night@nightmusic.net>
+Date: Sat, 27 Mar 2021 12:01:26 +0100
+Subject: [PATCH] Default tag apps - set application for each tag
+Then you can use the one keybind to spawn the default application of the tag you're on.
+
+---
+ config.def.h |  2 ++
+ dwm.c        | 36 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 38 insertions(+)
+
+diff --git a/config.def.h b/config.def.h
+index 1c0b587..066c7cc 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -20,6 +20,7 @@ static const char *colors[][3]      = {
+
+ /* tagging */
+ static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
++static const char *defaulttagapps[] = { "st", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+
+ static const Rule rules[] = {
+ 	/* xprop(1):
+@@ -63,6 +64,7 @@ static Key keys[] = {
+ 	/* modifier                     key        function        argument */
+ 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
+ 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
++	{ MODKEY,                       XK_s,      spawndefault,   {0} },
+ 	{ MODKEY,                       XK_b,      togglebar,      {0} },
+ 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
+ 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
+diff --git a/dwm.c b/dwm.c
+index 664c527..e0769ec 100644
+--- a/dwm.c
++++ b/dwm.c
+@@ -200,6 +200,7 @@ static void sendmon(Client *c, Monitor *m);
+ static void setclientstate(Client *c, long state);
+ static void setfocus(Client *c);
+ static void setfullscreen(Client *c, int fullscreen);
++static void setlasttag(int tagbit);
+ static void setlayout(const Arg *arg);
+ static void setmfact(const Arg *arg);
+ static void setup(void);
+@@ -207,6 +208,7 @@ static void seturgent(Client *c, int urg);
+ static void showhide(Client *c);
+ static void sigchld(int unused);
+ static void spawn(const Arg *arg);
++static void spawndefault();
+ static void tag(const Arg *arg);
+ static void tagmon(const Arg *arg);
+ static void tile(Monitor *);
+@@ -269,6 +271,9 @@ static Drw *drw;
+ static Monitor *mons, *selmon;
+ static Window root, wmcheckwin;
+
++static int lastchosentag[8];
++static int previouschosentag[8];
++
+ /* configuration, allows nested code to access above variables */
+ #include "config.h"
+
+@@ -1498,6 +1503,24 @@ setfullscreen(Client *c, int fullscreen)
+ 	}
+ }
+
++void
++setlasttag(int tagbit) {
++	const int mon = selmon->num;
++	if (tagbit > 0) {
++		int i = 1, pos = 0;
++		while (!(i & tagbit)) {
++			i = i << 1;
++			++pos;
++		}
++		previouschosentag[mon] = lastchosentag[mon];
++		lastchosentag[mon] = pos;
++	} else {
++		const int tempTag = lastchosentag[mon];
++		lastchosentag[mon] = previouschosentag[mon];
++		previouschosentag[mon] = tempTag;
++	}
++}
++
+ void
+ setlayout(const Arg *arg)
+ {
+@@ -1653,6 +1676,17 @@ spawn(const Arg *arg)
+ 	}
+ }
+
++void
++spawndefault()
++{
++	const char *app = defaulttagapps[lastchosentag[selmon->num]];
++	if (app) {
++		const char *defaultcmd[] = {app, NULL};
++		Arg a = {.v = defaultcmd};
++		spawn(&a);
++	}
++}
++
+ void
+ tag(const Arg *arg)
+ {
+@@ -1744,6 +1778,7 @@ toggleview(const Arg *arg)
+
+ 	if (newtagset) {
+ 		selmon->tagset[selmon->seltags] = newtagset;
++		setlasttag(newtagset);
+ 		focus(NULL);
+ 		arrange(selmon);
+ 	}
+@@ -2040,6 +2075,7 @@ view(const Arg *arg)
+ {
+ 	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
+ 		return;
++	setlasttag(arg->ui);
+ 	selmon->seltags ^= 1; /* toggle sel tagset */
+ 	if (arg->ui & TAGMASK)
+ 		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
+--
+2.31.0
+
