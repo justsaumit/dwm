@@ -241,7 +241,7 @@ static void movemouse(const Arg *arg);
 static unsigned int nexttag(void);
 static Client *nexttiled(Client *c);
 static void pop(Client *);
-static unsigned int prevtag(void);
+static unsigned int nexttagnoskip(void);
 static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
@@ -272,8 +272,6 @@ static void spawn(const Arg *arg);
 static Monitor *systraytomon(Monitor *m);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
-static void tagtonext(const Arg *arg);
-static void tagtoprev(const Arg *arg);
 static void tile(Monitor *);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
@@ -298,7 +296,7 @@ static void updatewindowtype(Client *c);
 static void updatewmhints(Client *c);
 static void view(const Arg *arg);
 static void viewnext(const Arg *arg);
-static void viewprev(const Arg *arg);
+static void viewnextnoskip(const Arg *arg);
 static Client *wintoclient(Window w);
 static Monitor *wintomon(Window w);
 static Client *wintosystrayicon(Window w);
@@ -1526,25 +1524,10 @@ pop(Client *c)
 }
 
 unsigned int
-prevtag(void)
+nexttagnoskip(void)
 {
-	unsigned int seltag = selmon->tagset[selmon->seltags];
-	unsigned int usedtags = 0;
-	Client *c = selmon->clients;
-	if (!c)
-		return seltag;
-
-	/* skip vacant tags */
-	do {
-		usedtags |= c->tags;
-		c = c->next;
-	} while (c);
-
-	do {
-		seltag = seltag == 1 ? (1 << (LENGTH(tags) - 1)) : seltag >> 1;
-	} while (!(seltag & usedtags));
-
-	return seltag;
+    unsigned int seltag = selmon->tagset[selmon->seltags];
+    return seltag == (1 << (LENGTH(tags) - 1)) ? 1 : seltag << 1;
 }
 
 void
@@ -2101,36 +2084,6 @@ tagmon(const Arg *arg)
 	if (!selmon->sel || !mons->next)
 		return;
 	sendmon(selmon->sel, dirtomon(arg->i));
-}
-
-void
-tagtonext(const Arg *arg)
-{
-	unsigned int tmp;
-
-	if (selmon->sel == NULL)
-		return;
-
-	if ((tmp = nexttag()) == selmon->tagset[selmon->seltags])
-		return;
-
-	tag(&(const Arg){.ui = tmp });
-	view(&(const Arg){.ui = tmp });
-}
-
-void
-tagtoprev(const Arg *arg)
-{
-	unsigned int tmp;
-
-	if (selmon->sel == NULL)
-		return;
-
-	if ((tmp = prevtag()) == selmon->tagset[selmon->seltags])
-		return;
-
-	tag(&(const Arg){.ui = tmp });
-	view(&(const Arg){.ui = tmp });
 }
 
 void
@@ -2821,9 +2774,9 @@ viewnext(const Arg *arg)
 }
 
 void
-viewprev(const Arg *arg)
+viewnextnoskip(const Arg *arg)
 {
-	view(&(const Arg){.ui = prevtag()});
+	view(&(const Arg){.ui = nexttagnoskip()});
 }
  
 Client *
