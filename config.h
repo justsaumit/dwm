@@ -83,7 +83,7 @@ static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ ALTKEY,                       XK_d,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
-    { ALTKEY,                       XK_Return, togglescratch,  {.v = scratchpadcmd } },
+    { ALTKEY,                       XK_s, togglescratch,  {.v = scratchpadcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
