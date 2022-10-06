@@ -1,7 +1,7 @@
-From 3904d7521ef64938b2a8b7fb06ef5a5223d3f62b Mon Sep 17 00:00:00 2001
-From: Jack Bird <jack.bird@durham.ac.uk>
-Date: Fri, 27 Aug 2021 00:04:45 +0100
-Subject: [PATCH] 6.2 swallow patch
+From 0cf9a007511f7dfd7dd94171b172562ebac9b6d5 Mon Sep 17 00:00:00 2001
+From: Tom Schwindl <schwindl@posteo.de>
+Date: Sat, 10 Sep 2022 12:51:09 +0200
+Subject: [PATCH] 6.3 swallow patch
 
 ---
  config.def.h |   9 +-
@@ -10,7 +10,7 @@ Subject: [PATCH] 6.2 swallow patch
  3 files changed, 237 insertions(+), 10 deletions(-)
 
 diff --git a/config.def.h b/config.def.h
-index 1c0b587..fe51476 100644
+index 061ad662f82a..0b2b8ffd30d5 100644
 --- a/config.def.h
 +++ b/config.def.h
 @@ -3,6 +3,7 @@
@@ -37,13 +37,13 @@ index 1c0b587..fe51476 100644
  
  /* layout(s) */
 diff --git a/config.mk b/config.mk
-index 6d36cb7..5d136bc 100644
+index 81c493ef4aff..52d1ebf30bec 100644
 --- a/config.mk
 +++ b/config.mk
-@@ -19,10 +19,11 @@ FREETYPELIBS = -lfontconfig -lXft
- FREETYPEINC = /usr/include/freetype2
+@@ -20,10 +20,11 @@ FREETYPEINC = /usr/include/freetype2
  # OpenBSD (uncomment)
  #FREETYPEINC = ${X11INC}/freetype2
+ #MANPREFIX = ${PREFIX}/man
 +#KVMLIB = -lkvm
  
  # includes and libs
@@ -52,9 +52,9 @@ index 6d36cb7..5d136bc 100644
 +LIBS = -L${X11LIB} -lX11 ${XINERAMALIBS} ${FREETYPELIBS} -lX11-xcb -lxcb -lxcb-res ${KVMLIB}
  
  # flags
- CPPFLAGS = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_POSIX_C_SOURCE=2 -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}
+ CPPFLAGS = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_POSIX_C_SOURCE=200809L -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}
 diff --git a/dwm.c b/dwm.c
-index 4465af1..66bd0ed 100644
+index e5efb6a22806..e68294b6b679 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -40,6 +40,12 @@
@@ -71,7 +71,7 @@ index 4465af1..66bd0ed 100644
  #include "drw.h"
  #include "util.h"
 @@ -92,9 +98,11 @@ struct Client {
- 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
+ 	int basew, baseh, incw, inch, maxw, maxh, minw, minh, hintsvalid;
  	int bw, oldbw;
  	unsigned int tags;
 -	int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
@@ -92,7 +92,7 @@ index 4465af1..66bd0ed 100644
  	int monitor;
  } Rule;
  
-@@ -234,6 +244,12 @@ static int xerrordummy(Display *dpy, XErrorEvent *ee);
+@@ -235,6 +245,12 @@ static int xerrordummy(Display *dpy, XErrorEvent *ee);
  static int xerrorstart(Display *dpy, XErrorEvent *ee);
  static void zoom(const Arg *arg);
  
@@ -105,7 +105,7 @@ index 4465af1..66bd0ed 100644
  /* variables */
  static const char broken[] = "broken";
  static char stext[256];
-@@ -268,6 +284,8 @@ static Drw *drw;
+@@ -269,6 +285,8 @@ static Drw *drw;
  static Monitor *mons, *selmon;
  static Window root, wmcheckwin;
  
@@ -114,7 +114,7 @@ index 4465af1..66bd0ed 100644
  /* configuration, allows nested code to access above variables */
  #include "config.h"
  
-@@ -297,6 +315,8 @@ applyrules(Client *c)
+@@ -298,6 +316,8 @@ applyrules(Client *c)
  		&& (!r->class || strstr(class, r->class))
  		&& (!r->instance || strstr(instance, r->instance)))
  		{
@@ -123,7 +123,7 @@ index 4465af1..66bd0ed 100644
  			c->isfloating = r->isfloating;
  			c->tags |= r->tags;
  			for (m = mons; m && m->num != r->monitor; m = m->next);
-@@ -413,6 +433,53 @@ attachstack(Client *c)
+@@ -416,6 +436,53 @@ attachstack(Client *c)
  	c->mon->stack = c;
  }
  
@@ -177,7 +177,7 @@ index 4465af1..66bd0ed 100644
  void
  buttonpress(XEvent *e)
  {
-@@ -652,6 +719,9 @@ destroynotify(XEvent *e)
+@@ -656,6 +723,9 @@ destroynotify(XEvent *e)
  
  	if ((c = wintoclient(ev->window)))
  		unmanage(c, 1);
@@ -187,7 +187,7 @@ index 4465af1..66bd0ed 100644
  }
  
  void
-@@ -1017,12 +1087,13 @@ killclient(const Arg *arg)
+@@ -1022,12 +1092,13 @@ killclient(const Arg *arg)
  void
  manage(Window w, XWindowAttributes *wa)
  {
@@ -202,15 +202,15 @@ index 4465af1..66bd0ed 100644
  	/* geometry */
  	c->x = c->oldx = wa->x;
  	c->y = c->oldy = wa->y;
-@@ -1037,6 +1108,7 @@ manage(Window w, XWindowAttributes *wa)
+@@ -1042,6 +1113,7 @@ manage(Window w, XWindowAttributes *wa)
  	} else {
  		c->mon = selmon;
  		applyrules(c);
 +		term = termforwin(c);
  	}
  
- 	if (c->x + WIDTH(c) > c->mon->mx + c->mon->mw)
-@@ -1073,6 +1145,8 @@ manage(Window w, XWindowAttributes *wa)
+ 	if (c->x + WIDTH(c) > c->mon->wx + c->mon->ww)
+@@ -1076,6 +1148,8 @@ manage(Window w, XWindowAttributes *wa)
  	c->mon->sel = c;
  	arrange(c->mon);
  	XMapWindow(dpy, c->win);
@@ -219,7 +219,7 @@ index 4465af1..66bd0ed 100644
  	focus(NULL);
  }
  
-@@ -1765,6 +1839,20 @@ unmanage(Client *c, int destroyed)
+@@ -1763,6 +1837,20 @@ unmanage(Client *c, int destroyed)
  	Monitor *m = c->mon;
  	XWindowChanges wc;
  
@@ -240,7 +240,7 @@ index 4465af1..66bd0ed 100644
  	detach(c);
  	detachstack(c);
  	if (!destroyed) {
-@@ -1779,9 +1867,12 @@ unmanage(Client *c, int destroyed)
+@@ -1778,9 +1866,12 @@ unmanage(Client *c, int destroyed)
  		XUngrabServer(dpy);
  	}
  	free(c);
@@ -393,7 +393,7 @@ index 4465af1..66bd0ed 100644
  Client *
  wintoclient(Window w)
  {
-@@ -2135,10 +2356,12 @@ main(int argc, char *argv[])
+@@ -2133,10 +2354,12 @@ main(int argc, char *argv[])
  		fputs("warning: no locale support\n", stderr);
  	if (!(dpy = XOpenDisplay(NULL)))
  		die("dwm: cannot open display");
@@ -408,5 +408,5 @@ index 4465af1..66bd0ed 100644
  #endif /* __OpenBSD__ */
  	scan();
 -- 
-2.33.0
+2.37.2
 

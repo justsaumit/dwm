@@ -1,6 +1,6 @@
-diff -up dwm-6.2/dwm.c dwm-6.2-attachbottom/dwm.c
---- dwm-6.2/dwm.c	2019-02-02 13:55:28.000000000 +0100
-+++ dwm-6.2-attachbottom/dwm.c	2020-12-27 10:43:35.956867775 +0100
+diff -up dwm-6.3/dwm.c dwm-6.3-attachbottom/dwm.c
+--- dwm-6.3/dwm.c	2022-01-07 12:42:18.000000000 +0100
++++ dwm-6.3-attachbottom/dwm.c	2022-08-17 22:14:41.813809073 +0200
 @@ -147,6 +147,7 @@ static int applysizehints(Client *c, int
  static void arrange(Monitor *m);
  static void arrangemon(Monitor *m);
@@ -9,7 +9,7 @@ diff -up dwm-6.2/dwm.c dwm-6.2-attachbottom/dwm.c
  static void attachstack(Client *c);
  static void buttonpress(XEvent *e);
  static void checkotherwm(void);
-@@ -407,6 +408,15 @@ attach(Client *c)
+@@ -408,6 +409,15 @@ attach(Client *c)
  }
  
  void
@@ -25,7 +25,7 @@ diff -up dwm-6.2/dwm.c dwm-6.2-attachbottom/dwm.c
  attachstack(Client *c)
  {
  	c->snext = c->mon->stack;
-@@ -1062,7 +1072,7 @@ manage(Window w, XWindowAttributes *wa)
+@@ -1066,7 +1076,7 @@ manage(Window w, XWindowAttributes *wa)
  		c->isfloating = c->oldstate = trans != None || c->isfixed;
  	if (c->isfloating)
  		XRaiseWindow(dpy, c->win);
@@ -34,7 +34,7 @@ diff -up dwm-6.2/dwm.c dwm-6.2-attachbottom/dwm.c
  	attachstack(c);
  	XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32, PropModeAppend,
  		(unsigned char *) &(c->win), 1);
-@@ -1417,7 +1427,7 @@ sendmon(Client *c, Monitor *m)
+@@ -1421,7 +1431,7 @@ sendmon(Client *c, Monitor *m)
  	detachstack(c);
  	c->mon = m;
  	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
@@ -43,7 +43,7 @@ diff -up dwm-6.2/dwm.c dwm-6.2-attachbottom/dwm.c
  	attachstack(c);
  	focus(NULL);
  	arrange(NULL);
-@@ -1897,7 +1907,7 @@ updategeom(void)
+@@ -1903,7 +1913,7 @@ updategeom(void)
  					m->clients = c->next;
  					detachstack(c);
  					c->mon = mons;
