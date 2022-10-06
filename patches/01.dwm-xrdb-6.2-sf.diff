@@ -1,7 +1,7 @@
-diff --git a/config.def.h b/config.def.h
-index 1c0b587..5db7d05 100644
---- a/config.def.h
-+++ b/config.def.h
+diff --git a/config.h b/config.h
+index 061ad66..686b947 100644
+--- a/config.h
++++ b/config.h
 @@ -7,15 +7,16 @@ static const int showbar            = 1;        /* 0 means no bar */
  static const int topbar             = 1;        /* 0 means bottom bar */
  static const char *fonts[]          = { "monospace:size=10" };
@@ -29,15 +29,15 @@ index 1c0b587..5db7d05 100644
  
  /* tagging */
 @@ -56,7 +57,7 @@ static const Layout layouts[] = {
+ #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
  
  /* commands */
- static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
--static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
-+static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbordercolor, "-sf", selfgcolor, NULL };
+-static const char *dmenucmd[] = { "dmenu_run", "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
++static const char *dmenucmd[] = { "dmenu_run", "-fn", dmenufont, "-nb", normbgcolor, "-nf", normfgcolor, "-sb", selbordercolor, "-sf", selfgcolor, NULL };
  static const char *termcmd[]  = { "st", NULL };
  
- static Key keys[] = {
-@@ -84,6 +85,7 @@ static Key keys[] = {
+ static const Key keys[] = {
+@@ -84,6 +85,7 @@ static const Key keys[] = {
  	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
  	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
  	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
@@ -46,10 +46,10 @@ index 1c0b587..5db7d05 100644
  	TAGKEYS(                        XK_2,                      1)
  	TAGKEYS(                        XK_3,                      2)
 diff --git a/drw.c b/drw.c
-index 8fd1ca4..e4968a0 100644
+index a58a2b4..f8a82f5 100644
 --- a/drw.c
 +++ b/drw.c
-@@ -207,7 +207,7 @@ drw_clr_create(Drw *drw, Clr *dest, const char *clrname)
+@@ -195,7 +195,7 @@ drw_clr_create(Drw *drw, Clr *dest, const char *clrname)
  /* Wrapper to create color schemes. The caller has to call free(3) on the
   * returned color scheme when done using it. */
  Clr *
@@ -59,10 +59,10 @@ index 8fd1ca4..e4968a0 100644
  	size_t i;
  	Clr *ret;
 diff --git a/drw.h b/drw.h
-index 4bcd5ad..42b04ce 100644
+index 6471431..bdbf950 100644
 --- a/drw.h
 +++ b/drw.h
-@@ -39,7 +39,7 @@ void drw_font_getexts(Fnt *font, const char *text, unsigned int len, unsigned in
+@@ -40,7 +40,7 @@ void drw_font_getexts(Fnt *font, const char *text, unsigned int len, unsigned in
  
  /* Colorscheme abstraction */
  void drw_clr_create(Drw *drw, Clr *dest, const char *clrname);
@@ -72,7 +72,7 @@ index 4bcd5ad..42b04ce 100644
  /* Cursor abstraction */
  Cur *drw_cur_create(Drw *drw, int shape);
 diff --git a/dwm.c b/dwm.c
-index 4465af1..7fa45c5 100644
+index e5efb6a..3fe76be 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -35,6 +35,7 @@
@@ -105,7 +105,7 @@ index 4465af1..7fa45c5 100644
  
  /* enums */
  enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
-@@ -177,6 +193,7 @@ static void grabkeys(void);
+@@ -178,6 +194,7 @@ static void grabkeys(void);
  static void incnmaster(const Arg *arg);
  static void keypress(XEvent *e);
  static void killclient(const Arg *arg);
@@ -113,7 +113,7 @@ index 4465af1..7fa45c5 100644
  static void manage(Window w, XWindowAttributes *wa);
  static void mappingnotify(XEvent *e);
  static void maprequest(XEvent *e);
-@@ -232,6 +249,7 @@ static Monitor *wintomon(Window w);
+@@ -233,6 +250,7 @@ static Monitor *wintomon(Window w);
  static int xerror(Display *dpy, XErrorEvent *ee);
  static int xerrordummy(Display *dpy, XErrorEvent *ee);
  static int xerrorstart(Display *dpy, XErrorEvent *ee);
@@ -121,7 +121,7 @@ index 4465af1..7fa45c5 100644
  static void zoom(const Arg *arg);
  
  /* variables */
-@@ -1014,6 +1032,37 @@ killclient(const Arg *arg)
+@@ -1019,6 +1037,37 @@ killclient(const Arg *arg)
  	}
  }
  
@@ -177,7 +177,7 @@ index 4465af1..7fa45c5 100644
  void
  zoom(const Arg *arg)
  {
-@@ -2136,6 +2196,8 @@ main(int argc, char *argv[])
+@@ -2134,6 +2194,8 @@ main(int argc, char *argv[])
  	if (!(dpy = XOpenDisplay(NULL)))
  		die("dwm: cannot open display");
  	checkotherwm();
