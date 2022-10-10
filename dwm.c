@@ -238,7 +238,7 @@ static void movemouse(const Arg *arg);
 static unsigned int nexttag(void);
 static Client *nexttiled(Client *c);
 static void pop(Client *c);
-static unsigned int nexttagnoskip(void);
+static unsigned int prevtagskip(void);
 static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
@@ -294,8 +294,8 @@ static void updatetitle(Client *c);
 static void updatewindowtype(Client *c);
 static void updatewmhints(Client *c);
 static void view(const Arg *arg);
-static void viewnext(const Arg *arg);
-static void viewnextnoskip(const Arg *arg);
+static void viewnextskipvac(const Arg *arg);
+static void viewprevskipvac(const Arg *arg);
 static Client *wintoclient(Window w);
 static Monitor *wintomon(Window w);
 static Client *wintosystrayicon(Window w);
@@ -1526,7 +1526,7 @@ pop(Client *c)
 }
 
 unsigned int
-nexttagnoskip(void)
+prevtagskip(void)
 {
 	unsigned int seltag = selmon->tagset[selmon->seltags];
 	unsigned int usedtags = 0;
@@ -2120,7 +2120,7 @@ tagtoprev(const Arg *arg)
 	if (selmon->sel == NULL)
 		return;
 
-	if ((tmp = nexttagnoskip()) == selmon->tagset[selmon->seltags])
+	if ((tmp = prevtagskip()) == selmon->tagset[selmon->seltags])
 		return;
 
 	tag(&(const Arg){.ui = tmp });
@@ -2815,15 +2815,15 @@ swallowingclient(Window w)
 }
 
 void
-viewnext(const Arg *arg)
+viewnextskipvac(const Arg *arg)
 {
 	view(&(const Arg){.ui = nexttag()});
 }
 
 void
-viewnextnoskip(const Arg *arg)
+viewprevskipvac(const Arg *arg)
 {
-	view(&(const Arg){.ui = nexttagnoskip()});
+	view(&(const Arg){.ui = prevtagskip()});
 }
  
 Client *
